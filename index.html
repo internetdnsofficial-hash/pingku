@@ -484,6 +484,17 @@
         <input type="url" id="siteUrl" placeholder="https://yourdomain.com/feed" />
       </div>
 
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:6px;">
+          IndexNow API Key
+          <span style="background:rgba(0,229,255,0.1);color:var(--accent);font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid rgba(0,229,255,0.2);letter-spacing:0.5px;">OPSIONAL</span>
+        </label>
+        <input type="text" id="indexnowKey" placeholder="contoh: d16841a6d62f4b6e8b12b53854db6b23" />
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;font-family:'Space Mono',monospace;">
+          Isi untuk ping ke Google & Bing via IndexNow. <a href="https://www.bing.com/indexnow/getstarted" target="_blank" style="color:var(--accent);text-decoration:none;">Dapat key →</a>
+        </div>
+      </div>
+
       <button class="btn-ping" id="pingBtn" onclick="sendPing()">
         <span class="btn-text">⚡ SEND PING NOW</span>
         <div class="loader" id="loader"></div>
@@ -524,13 +535,20 @@
     // Load history on start
     loadHistory();
 
+    // Restore IndexNow key dari localStorage
+    const savedKey = localStorage.getItem('indexnowKey');
+    if (savedKey) document.getElementById('indexnowKey').value = savedKey;
+
     async function sendPing() {
       const url = document.getElementById('siteUrl').value.trim();
       const blogName = document.getElementById('blogName').value.trim() || 'My Blog';
+      const indexnowKey = document.getElementById('indexnowKey').value.trim();
 
       if (!url) { showToast('⚠ Please enter a URL'); return; }
-
       try { new URL(url); } catch { showToast('⚠ Invalid URL format'); return; }
+
+      // Simpan key di localStorage biar tidak perlu isi ulang
+      if (indexnowKey) localStorage.setItem('indexnowKey', indexnowKey);
 
       // Loading state
       const btn = document.getElementById('pingBtn');
@@ -542,7 +560,7 @@
         const res = await fetch('/.netlify/functions/ping', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url, blogName })
+          body: JSON.stringify({ url, blogName, indexnowKey })
         });
 
         const data = await res.json();
